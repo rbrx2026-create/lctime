@@ -31,7 +31,7 @@ int main(){
 
     std::filesystem::create_directories("/var/lib/lctime");
     std::ifstream time_lastc_f_r("/var/lib/lctime/lctime_c");
-    std::ofstream time_last_f_w_t("/var/lib/lctime/last_time");
+    std::ofstream time_last_f_w_t("/var/lib/lctime/lctime");
     time_lastc_f_r>>time_last;
     time_last_f_w_t<<time_last<<'\n';
     time_last_f_w_t.close();
@@ -58,7 +58,7 @@ int main(){
     time_temp=time_last+time_now;
 
     std::ofstream time_lastc_f_w ("/var/lib/lctime/lctime_c");
-    std::ofstream time_last_f_w ("/var/lib/lctime/last_time");
+    std::ofstream time_last_f_w ("/var/lib/lctime/lctime");
     time_lastc_f_w<<time_temp<<'\n';
     time_last_f_w<<time_temp<<'\n';
 

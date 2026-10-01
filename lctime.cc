@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
     
         std::string arg=argv[1];
         if (arg=="-v") {
-            std::cout<<"lctime 1.0.0"<<'\n';
+            std::cout<<"lctime 1.0.1"<<'\n';
             return 0;
         }else {
             std::cerr<<"error: unknown option "+arg<<'\n';
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
     
     
    
-    std::ifstream time_last_f("/var/lib/lctime/last_time");
+    std::ifstream time_last_f("/var/lib/lctime/lctime");
     
     uint64_t time_last,time_now,time_nt;
     long double time_day;
