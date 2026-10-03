@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
@@ -20,13 +21,9 @@ int main(int argc, char* argv[]){
     }
     
     
-   
+   std::ifstream time_last_f("/var/lib/lctime/lctime");
     
-    
-   
-    std::ifstream time_last_f("/var/lib/lctime/lctime");
-    
-    uint64_t time_last,time_now,time_nt;
+    uint64_t time_last,time_now,time_nt,time_hour;
     long double time_day;
     
     
@@ -58,15 +55,14 @@ int main(int argc, char* argv[]){
     
     time_nt=time_last+time_now;
     time_day=static_cast<double>(time_nt)/86400;
+    time_hour=static_cast<uint64_t>(time_day*24)%24;
 
-    
-    
-    
-    std::cout<<time_day<<" days"<<'\n';
+    std::cout<<std::floor(time_day)<<" days ";
+    std::cout<<time_hour<<" hours"<<'\n';
     if (core) {
-        std::cout<<"lctime_core is "<<"Not running"<<'\n';
+        std::cout<<"lctime_core is "<<"inactive"<<'\n';
     }else {
-        std::cout<<"lctime_core is "<<"Running"<<'\n';
+        std::cout<<"lctime_core is "<<"active"<<'\n';
     }
 
     return 0;
