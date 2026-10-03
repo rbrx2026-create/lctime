@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
     
         std::string arg=argv[1];
         if (arg=="-v") {
-            std::cout<<"lctime 1.0.3"<<'\n';
+            std::cout<<"lctime 1.0.4"<<'\n';
             return 0;
         }else {
             std::cerr<<"error: unknown option "+arg<<'\n';
@@ -70,12 +70,14 @@ int main(int argc, char* argv[]){
     time_second=time_total%60;
 
 
-     std::cout<<time_day<<"d "
-             <<time_hour<<"h "
-             <<time_minute<<"m "
-             <<time_second<<"s ";
-
+   
     if(conf) {
+        std::cout<<time_day<<"d "
+                 <<time_hour<<"h "
+                 <<time_minute<<"m "
+                <<time_second<<"s ";
+
+
         time_ms=(time_total_ns/1000000)%1000;
         time_μs=(time_total_ns/1000)%1000;
         time_ns=time_total_ns%1000;
@@ -83,7 +85,13 @@ int main(int argc, char* argv[]){
 
         std::cout<<time_ms<<"ms "
                 <<time_μs<<"μs "
-                <<time_ns<<"ns ";
+                <<time_ns<<"ns "<<'\n';
+    }else{
+          std::cout<<time_day<<"d "
+                   <<time_hour<<"h "
+                   <<time_minute<<"m "
+                   <<time_second<<"s "<<'\n';
+
     }
     
    
