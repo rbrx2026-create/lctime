@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-bool lctime_conf_r (const std::string& conf){               //用于检查配置文件中是否存在某个配置项
+bool lctime_conf_r (const std::string& conf){               //用于检查配置文件中是否存在某个配置项，若存在则返回true，否则返回false
     std::ifstream conf_f("/etc/lctime/lctime.conf");
     if(!conf_f) {
         std::cerr<<"lctime: failed to open /etc/lctime/lctime.conf for reading"<<'\n';
@@ -22,7 +22,7 @@ bool lctime_conf_r (const std::string& conf){               //用于检查配置
     }
 }
 
-std::string lctime_argv (std::vector<std::string> args,std::string argv_total){             //检查用户输入的参数是否存在
+std::string lctime_argv (std::vector<std::string> args,std::string argv_total){             //检查用户输入的参数是否存在，并返回第一个存在的参数，若不存在则返回error
     for(const auto& arg:args){
         if (argv_total.find(" "+arg+" ")==std::string::npos) {
             std::cerr<<"lctime: invalid option -- '"<<arg<<"'"<<'\n';
@@ -33,7 +33,7 @@ std::string lctime_argv (std::vector<std::string> args,std::string argv_total){ 
     }
     return "error";
 }
-bool lctime_conf_argv (std::string conf,std::string conf_total){            //检查用户输入的配置项是否存在
+bool lctime_conf_argv (std::string conf,std::string conf_total){            //检查用户输入的配置项是否存在，若不存在则返回false，存在则返回true
    if (conf_total.find(" "+conf+" ")==std::string::npos) {
         std::cerr<<"lctime: invalid option -- '"<<conf<<"'"<<'\n';
         return false;
@@ -44,7 +44,7 @@ bool lctime_conf_argv (std::string conf,std::string conf_total){            //�
    
    }
 
-bool lctime_conf_w(std::string conf){                                       //用于写入配置文件
+bool lctime_conf_w(std::string conf){                                       //用于写入配置文件，若配置文件中已存在该配置项，则修改该配置项的值，否则在文件末尾添加该配置项
     std::ifstream conf_f_r_t("/etc/lctime/lctime.conf");    
     std::vector<std::string> conf_vec;
     std::string conf_str;
