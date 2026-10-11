@@ -6,19 +6,23 @@
 #include <string>
 #include <vector>
 
-bool lctime_conf_r (const std::string& conf){               //用于检查配置文件中是否存在某个配置项，若存在则返回true，否则返回false
+std::string lctime_conf_r (const std::string& conf){               //用于检查配置项，若存在则返回该配置项的值，否则返回空字符串
     std::ifstream conf_f("/etc/lctime/lctime.conf");
     if(!conf_f) {
         std::cerr<<"lctime: failed to open /etc/lctime/lctime.conf for reading"<<'\n';
-        return false;
+        return "";
     }else{
         std::string conf_str;
         while (std::getline(conf_f, conf_str)) {
-            if(conf_str==conf) {
-                return true;
+              std::erase(conf_str,' ');
+            if(!conf_str.starts_with(conf+'=')) {
+                continue;
+            }else{
+                std::string conf_value=conf_str.substr(conf_str.find('=') + 1);
+                return conf_value;
             }
         }
-            return false;
+    return "";
     }
 }
 
@@ -44,7 +48,7 @@ bool lctime_conf_argv (std::string conf,std::string conf_total){            //�
    
    }
 
-bool lctime_conf_w(std::string conf){                                       //用于写入配置文件，若配置文件中已存在该配置项，则修改该配置项的值，否则在文件末尾添加该配置项
+bool lctime_conf_w(std::string conf,std::string conf_igur){                                       //用于写入配置文件,若配置项存在则修改其值，若不存在则添加该配置项
     std::ifstream conf_f_r_t("/etc/lctime/lctime.conf");    
     std::vector<std::string> conf_vec;
     std::string conf_str;
@@ -54,7 +58,7 @@ bool lctime_conf_w(std::string conf){                                       //�
     conf_f_r_t.close();
     int conf_count{0};
     for (const auto& c:conf_vec) {
-       if(c=="TIME_NS=true"||c=="TIME_NS=false"||c=="TIME_NS"||c=="TIME_NS=") {
+       if(c.find(conf)!=std::string::npos) {
             break;
         }
         ++conf_count;
@@ -62,7 +66,7 @@ bool lctime_conf_w(std::string conf){                                       //�
     std::ofstream conf_f_w_t("/etc/lctime/lctime.conf",std::ios::app);
     if(conf_f_w_t){ 
         if((conf_count)<(conf_vec.size())) {
-            conf_vec[conf_count]=conf;
+            conf_vec[conf_count]=conf+'='+conf_igur;
             std::ofstream conf_f_w_t("/etc/lctime/lctime.conf");
             for (const auto& c:conf_vec) {
                 conf_f_w_t<<c<<'\n';
@@ -70,7 +74,7 @@ bool lctime_conf_w(std::string conf){                                       //�
             conf_f_w_t.close();
             return true;
         }else{
-                conf_f_w_t<<conf<<'\n';
+                conf_f_w_t<<conf<<'='<<conf_igur<<'\n';
                 conf_f_w_t.close();
                 return true;
         }
@@ -86,7 +90,7 @@ int main(int argc, char* argv[]){
 
     std::string argv_total{" -v --version -h --help -c --conf "};           //定义允许的参数
     std::string conf_total{" TIME_NS  TIME_NS=true  TIME_NS=false "};       //定义允许的配置项
-
+    std::string conf_total_no_bool{" TIME_NS "};                                                        //定义允许的配置项（不带bool值）
     if (argc>=2) {    
     
         std::vector<std::string> args;              
@@ -120,25 +124,19 @@ int main(int argc, char* argv[]){
                     }
                    
                 }
-                if(argv[conf_count+1]==nullptr) {
+                if(conf_count+1>=args.size()) {
                     std::cerr<<"lctime: option requires an argument --'-c'"<<'\n';
                     return 2;                                                                       //预防用户输入-c/--conf后没有跟参数的情况
-                }else if(argv[conf_count+1]!=nullptr) {
-                    std::string conf_argv=argv[conf_count+1];
-                    if (conf_argv=="TIME_NS") {
-                        
-                        bool conf = lctime_conf_r("TIME_NS=true");
-                        if(conf) {
-                            std::cout<<"TIME_NS=true"<<'\n';
-                        }else{
-                            std::cout<<"TIME_NS=false"<<'\n';
-                        }
+                }else {
+                    std::string conf_args=args[conf_count+1];
+                    if (conf_total_no_bool.find(" "+conf_args+" ")!=std::string::npos) {
+                            std::cout<<"conf_args="<<lctime_conf_r(args[conf_count+1])<<'\n';
                         return 0;
                     }else{
-                        if(!lctime_conf_argv(conf_argv,conf_total)) {
+                        if(!lctime_conf_argv(conf_args,conf_total)) {
                             return 2;
                         }else{
-                            bool conf_written = lctime_conf_w(argv[conf_count+1]);
+                            bool conf_written = lctime_conf_w(args[conf_count+1]);
                             if (!conf_written) {
                                 std::cerr<<"lctime: failed to write configuration"<<'\n';
                                 return 1;
@@ -160,7 +158,8 @@ int main(int argc, char* argv[]){
     std::ifstream time_last_f("/var/lib/lctime/lctime");
    
    
-    bool conf = lctime_conf_r("TIME_NS=true");
+    std::string conf_value = lctime_conf_r("TIME_NS");
+    bool conf = (conf_value == "true");
    
     uint64_t time_last{0},time_now{0},time_total{0},time_hour{0},time_minute{0},time_day{0},time_second{0},time_now_ns{0},time_ns{0},time_ms{0},time_μs{0},time_last_ns{0},time_total_ns{0};
     
@@ -222,7 +221,7 @@ int main(int argc, char* argv[]){
     }
     
    
-
+    
 
 
     if (core) {
