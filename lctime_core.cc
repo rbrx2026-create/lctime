@@ -23,6 +23,8 @@ void restart(int){
         run_restart=false;
 }
 
+
+
 int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64_t &time_last_ns,struct timespec *ts,const std::atomic<bool>& run){
     if (clock_gettime(CLOCK_BOOTTIME,ts)==0){
             time_now=ts->tv_sec;
