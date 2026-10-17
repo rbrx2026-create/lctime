@@ -73,7 +73,7 @@ int main(){
     time_lastc_f_r>>time_last>>time_last_ns;
     time_last_f_r_t>>time_temp>>time_temp_ns;
     
-    if (((time_temp+ts.tv_sec)>time_last)&&(time_temp+ts.tv_sec)-time_last<=3600){
+    if (((time_temp+ts.tv_sec)>time_last)){
         std::swap(time_last,time_temp);
         std::swap(time_last_ns,time_temp_ns);
         time_lastc_f_r.close();
