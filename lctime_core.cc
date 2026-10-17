@@ -9,6 +9,7 @@
 
 
 std::atomic<bool> running =true;
+std::atomic<bool> run_restart=true;
 /*
 int now_time(struct timespec *ts){
     clock_gettime(CLOCK_BOOTTIME,ts);
@@ -18,8 +19,11 @@ int now_time(struct timespec *ts){
 void sleeped(int){
         running=false;
 }
+void restart(int){
+        run_restart=false;
+}
 
-int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64_t &time_last_ns,struct timespec *ts,bool run){
+int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64_t &time_last_ns,struct timespec *ts,const std::atomic<bool>& run){
     if (clock_gettime(CLOCK_BOOTTIME,ts)==0){
             time_now=ts->tv_sec;
             time_now_ns=ts->tv_nsec;
@@ -52,7 +56,7 @@ int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64
 
 
 int main(){
-    std::signal(SIGTERM,sleeped);
+    std::signal(SIGTERM,restart);
     std::signal(SIGINT,sleeped);
 
 
@@ -80,7 +84,7 @@ int main(){
     time_lastc_f_r>>time_last>>time_last_ns;
     time_last_f_r_t>>time_temp>>time_temp_ns;
     
-    if (((time_temp+ts.tv_sec)>time_last)){
+    if (((time_temp+ts.tv_sec)>=time_last)){
         std::swap(time_last,time_temp);
         std::swap(time_last_ns,time_temp_ns);
         time_lastc_f_r.close();
@@ -93,9 +97,9 @@ int main(){
         time_last_f_r_t.close();
     }
 
-    for(;running;){
+    for(;running&&run_restart;){
         sleep(1800);
-        if (!running) break;
+        if (!running||!run_restart) break;
 
         time_f_w(time_now,time_now_ns,time_last,time_last_ns,&ts,running);
 
