@@ -19,7 +19,7 @@ void sleeped(int){
         running=false;
 }
 
-int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64_t &time_last_ns,struct timespec *ts){
+int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64_t &time_last_ns,struct timespec *ts,bool run){
     if (clock_gettime(CLOCK_BOOTTIME,ts)==0){
             time_now=ts->tv_sec;
             time_now_ns=ts->tv_nsec;
@@ -38,6 +38,13 @@ int time_f_w(uint64_t &time_now,uint64_t &time_now_ns,uint64_t &time_last,uint64
         time_lastc_f_w<<time_total<<'\n'<<time_total_ns<<'\n';
         time_lastc_f_w.close();
         std::filesystem::rename("/var/lib/lctime/lctime_c_temp","/var/lib/lctime/lctime_c");
+        if (!run) {
+            std::ofstream time_last_f_w("/var/lib/lctime/lctime_temp");
+            time_last_f_w<<time_total<<'\n'<<time_total_ns<<'\n';
+            time_last_f_w.close();
+            std::filesystem::rename("/var/lib/lctime/lctime_temp","/var/lib/lctime/lctime");
+
+        }
         return 0;
 
 }
@@ -90,11 +97,11 @@ int main(){
         sleep(1800);
         if (!running) break;
 
-        time_f_w(time_now,time_now_ns,time_last,time_last_ns,&ts);
+        time_f_w(time_now,time_now_ns,time_last,time_last_ns,&ts,running);
 
     }
 
-    time_f_w(time_now,time_now_ns,time_last,time_last_ns,&ts);
+    time_f_w(time_now,time_now_ns,time_last,time_last_ns,&ts,running);
 
 
     return 0;
