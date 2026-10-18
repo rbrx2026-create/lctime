@@ -92,8 +92,8 @@ int main(int argc, char* argv[]){
     //std::string argv_total{" -v --version -h --help -c --conf "};           //定义允许的参数  已废弃！！！
     //std::string conf_total{" TIME_NS  TIME_NS=true  TIME_NS=false "};       //定义允许的配置项  已废弃 ！！！
     //std::string conf_total_no_bool{" TIME_NS "};                            //定义允许的配置项（不带bool值） 已废弃！！！
-    std::array<std::array<std::string, 1>,2> {"TIME_NS",
-                                              "bool"};
+    std::array<std::array<std::string, 1>,2> conf_total {"TIME_NS",
+                                                        "bool"};
     if (argc>=2) {    
     
         std::vector<std::string> args;              
