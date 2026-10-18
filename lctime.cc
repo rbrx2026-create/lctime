@@ -1,3 +1,4 @@
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
@@ -25,9 +26,8 @@ std::string lctime_conf_r (const std::string& conf){               //用于检�
     return "";
     }
 }
-
-std::string lctime_argv (std::vector<std::string> args,std::string argv_total){             //检查用户输入的参数是否存在，并返回第一个存在的参数，若不存在则返回error
-    for(const auto& arg:args){
+/*
+std::string lctime_argv (std::vector<std::string> args,std::string argv_total){             //检查用户输入的参数是否存在，并返回第一个存在的参数，若不存在则返回error   已废弃！！！！
         if (argv_total.find(" "+arg+" ")==std::string::npos) {
             std::cerr<<"lctime: invalid option -- '"<<arg<<"'"<<'\n';
             return "error";
@@ -37,6 +37,7 @@ std::string lctime_argv (std::vector<std::string> args,std::string argv_total){ 
     }
     return "error";
 }
+*/
 bool lctime_conf_argv (std::string conf,std::string conf_total){            //检查用户输入的配置项是否存在，若不存在则返回false，存在则返回true
    if (conf_total.find(" "+conf+" ")==std::string::npos) {
         std::cerr<<"lctime: invalid option -- '"<<conf<<"'"<<'\n';
@@ -88,23 +89,23 @@ bool lctime_conf_w(std::string conf,std::string conf_igur){                     
 
 int main(int argc, char* argv[]){
 
-    std::string argv_total{" -v --version -h --help -c --conf "};           //定义允许的参数
-    std::string conf_total{" TIME_NS  TIME_NS=true  TIME_NS=false "};       //定义允许的配置项
-    std::string conf_total_no_bool{" TIME_NS "};                                                        //定义允许的配置项（不带bool值）
+    //std::string argv_total{" -v --version -h --help -c --conf "};           //定义允许的参数  已废弃！！！
+    //std::string conf_total{" TIME_NS  TIME_NS=true  TIME_NS=false "};       //定义允许的配置项  已废弃 ！！！
+    //std::string conf_total_no_bool{" TIME_NS "};                            //定义允许的配置项（不带bool值） 已废弃！！！
+    std::array<std::array<std::string, 1>,2> {"TIME_NS",
+                                              "bool"};
     if (argc>=2) {    
     
         std::vector<std::string> args;              
         for (int i=1;i<argc;i++) {
-            args.push_back(argv[i]);                //转储参数
+            args.emplace_back(argv[i]);                //转储参数
         }
-        if (lctime_argv(args, argv_total)=="error") {       //检查参数是否存在
-            return 2;
-        }else {
-            std::string arg=lctime_argv(args, argv_total);
-            if (arg=="-v"||arg=="--version") {
+       
+        for(int args_l=0;args_l<args.size();){
+            if (args[args_l]=="-v"||args[args_l]=="--version") {
                 std::cout<<"lctime 1.0.5"<<'\n';
                 return 0;
-            }else if (arg=="-h"||arg=="--help") {
+            }else if (args[args_l]=="-h"||args[args_l]=="--help") {
                 std::cout<<"Usage: lctime [OPTION]..."<<'\n'
                          <<"Print the total time since the system was booted."<<'\n'
                          <<'\n'
@@ -112,36 +113,26 @@ int main(int argc, char* argv[]){
                          <<"  -h, --help        display this help and exit"<<'\n'
                          <<"  -c, --conf  +configuration items or configuration items==true/false      output configuration information and exit"<<'\n';
                 return 0;
-            }else if (arg=="-c"||arg=="--conf") {
-                int conf_count{0};                                                                  //查看-c/--conf在参数列表中的位置
-                for(const auto& arg:args){
-                    ++conf_count;      
-                    if (arg=="-c"||arg=="--conf") {
-                        break;
-                    }else{
-                        std::cerr<<"lctime: invalid option '"<<arg<<"'"<<'\n';
-                        return 2;
-                    }
-                   
-                }
-                if(conf_count+1>=args.size()) {
+            }else if (args[args_l]=="-c"||args[args_l]=="--conf") {
+                
+                if(args_l+1>=args.size()) {
                     std::cerr<<"lctime: option requires an argument --'-c'"<<'\n';
                     return 2;                                                                       //预防用户输入-c/--conf后没有跟参数的情况
                 }else {
-                    std::string conf_args=args[conf_count+1];
+                    std::string conf_args=args[args_l+1];
                     if (conf_total_no_bool.find(" "+conf_args+" ")!=std::string::npos) {
-                            std::cout<<"conf_args="<<lctime_conf_r(args[conf_count+1])<<'\n';
+                            std::cout<<"conf_args="<<lctime_conf_r(args[args_l+1])<<'\n';
                         return 0;
                     }else{
                         if(!lctime_conf_argv(conf_args,conf_total)) {
                             return 2;
                         }else{
-                            bool conf_written = lctime_conf_w(args[conf_count+1]);
+                            bool conf_written = lctime_conf_w(args[args_l+1]);
                             if (!conf_written) {
                                 std::cerr<<"lctime: failed to write configuration"<<'\n';
                                 return 1;
                             }                                                                         //修改参数后写入配置文件
-                            bool conf = lctime_conf_r("TIME_NS=true");
+                            bool conf = (lctime_conf_r("TIME_NS")=="true");
                             if(conf) {
                                 std::cout<<"TIME_NS=true"<<'\n';
                             }else{
@@ -151,6 +142,10 @@ int main(int argc, char* argv[]){
                         }
                     }                
                 }         
+            }else {
+                  std::cerr << "lctime: invalid option -- '" << args[args_l] << "'\n"
+                            << "Try 'lctime --help' for more information.\n";
+                return 3;
             }
         }
     }  
