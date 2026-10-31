@@ -84,15 +84,15 @@ int main(){
     struct timespec ts;  
 
     if(clock_gettime(CLOCK_BOOTTIME,&ts)!=0){
-        std::ofstream log ("/etc/lctime/lctime.log");
-        
+        std::ofstream log ("/var/lib/lctime/lctime.log");
+        log<<"Failed to read CLOCK_BOOTTIME"<<'\n';
         return 1;
     }
 
 
     std::ifstream boot_id_f ("/proc/sys/kernel/random/boot_id");
     if (!boot_id_f) {                                                           //获取boot_id
-        std::ofstream log ("/etc/lctime/lctime.log",std::ios::app);
+        std::ofstream log ("/var/lib/lctime/lctime.log",std::ios::app);
         if (!log) {
             return 4;
         }
@@ -100,7 +100,7 @@ int main(){
         return 5;
     }else {
         if (!(boot_id_f>>boot_id_now)) {
-             std::ofstream log ("/etc/lctime/lctime.log",std::ios::app);
+             std::ofstream log ("/var/lib/lctime/lctime.log",std::ios::app);
         if (!log) {
             return 4;
         }
@@ -109,7 +109,7 @@ int main(){
         }
     }
 
-    std::ifstream lctime_f_c_r_t ("/etc/lctime/lctime_c");
+    std::ifstream lctime_f_c_r_t ("/val/lib/lctime/lctime_c");
     if (!lctime_f_c_r_t) {
         boot_id_last.clear();
     }else {
@@ -118,15 +118,15 @@ int main(){
     lctime_f_c_r_t.close();
 
 
-    std::ofstream lctime_temp_f_w_t ("/etc/lctime/lctime_temp");
+    std::ofstream lctime_temp_f_w_t ("/var/lib/lctime/lctime_temp");
     if (boot_id_last.empty()) {
-        
+        goto stats;
     }else if (boot_id_last==boot_id_now) {
         time_last=time_boot;
         time_last_ns=time_boot_ns;
         lctime_temp_f_w_t<<time_last<<'\n'<<time_last_ns<<'\n';
         lctime_temp_f_w_t.close();
-        std::filesystem::rename("/etc/lctime/lctime_temp","/etc/lctime/lctime");
+        std::filesystem::rename("/var/lib/lctime/lctime_temp","/var/lib/lctime/lctime");
         
     }else {
         std::ofstream lctime_c_temp_f_w_t ("/etc/lctime/lctime_c_temp");
@@ -135,11 +135,12 @@ int main(){
         }else {
             lctime_c_temp_f_w_t<<time_last<<'\n'<<time_last_ns<<'\n'<<boot_id_now<<'\n'<<time_last<<'\n'<<time_last_ns;
             lctime_c_temp_f_w_t.close();
-            std::filesystem::rename("/etc/lctime/lctime_c_temp","/etc/lctime/lctime_c");
+            std::filesystem::rename("/var/lib/lctime/lctime_c_temp","/var/lib/lctime/lctime_c");
         }
     }
 
-    stat:auto time_f_w=[&](){
+    stats:
+    auto time_f_w=[&](){
         if (clock_gettime(CLOCK_BOOTTIME,&ts)==0){
             time_now=ts.tv_sec;
             time_now_ns=ts.tv_nsec;
